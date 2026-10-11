@@ -2,7 +2,8 @@
 <html lang="th" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- ป้องกันการซูมหน้าจอในมือถือด้วย user-scalable=no -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AI Secure Portal & Exam System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -26,6 +27,10 @@
         ::-webkit-scrollbar-thumb:hover { background: #374151; }
         .pan-container { touch-action: none; cursor: grab; }
         .pan-container:active { cursor: grabbing; }
+        /* ป้องกันการแตะซูม (Double-tap zoom) เพิ่มเติม */
+        body {
+            touch-action: pan-x pan-y;
+        }
     </style>
 </head>
 <body class="bg-dark-950 text-slate-100 min-h-screen flex flex-col justify-center items-center p-2 sm:p-4 md:p-6 select-none font-sans">
@@ -44,8 +49,8 @@
     <!-- 1. CALCULATOR SCREEN (LOCK SCREEN) -->
     <div id="view-calculator" class="w-full max-w-lg bg-dark-800 border border-slate-700/60 rounded-3xl p-6 md:p-8 shadow-2xl backdrop-blur-xl">
         <div class="flex items-center justify-between mb-4">
-            <span class="text-xs font-bold uppercase tracking-widest text-slate-400"><i class="fa-solid fa-calculator text-sky-400 mr-2"></i>เครื่องคิดเลขระบบความปลอดภัย</span>
-            <span class="text-xs text-sky-400 bg-sky-950/80 px-2.5 py-1 rounded-full border border-sky-800/60">Unlock Key: 0</span>
+            <span class="text-xs font-bold uppercase tracking-widest text-slate-400"><i class="fa-solid fa-calculator text-sky-400 mr-2"></i>เครื่องคิดเลข (ระบบยืนยันตัวตน)</span>
+            <span class="text-xs text-sky-400 bg-sky-950/80 px-2.5 py-1 rounded-full border border-sky-800/60">Secure Key</span>
         </div>
         <!-- Display -->
         <div class="bg-dark-900 border border-slate-700 rounded-2xl p-5 mb-6 text-right shadow-inner">
@@ -404,7 +409,9 @@
                 calcExpression = String(result);
                 updateCalcDisplay();
 
-                if (result === 0) {
+                // ปรับเงื่อนไขรหัสผ่านตรงนี้: กำหนดผลลัพธ์ที่ถูกต้อง (เช่น ต้องคำนวณได้ 99 หรือสูตรอื่นตามต้องการ)
+                // ตัวอย่างนี้ตั้งไว้ที่ 99 (เช่น กด 9*11 แล้วกด =)
+                if (result === 99) {
                     // UNLOCK APP
                     setTimeout(() => {
                         showView('view-menu');
@@ -985,7 +992,7 @@
             let updatedRow = [];
             headers.forEach((_, idx) => {
                 let val = document.getElementById(`edit-field-${idx}`).value;
-                updatedRow.push(val);
+                updatedRow.path ? updatedRow.push(val) : updatedRow.push(val); // Safe push
             });
             adminTableData[activeAdminTab][editingRowIndex] = updatedRow;
             closeAdminEditModal();
