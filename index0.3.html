@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Secure Portal & Exam System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: { dark: { 950: '#070a11', 900: '#0b0f19', 800: '#111827', 700: '#1f2937', 600: '#374151' } }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0b0f19; }
+        ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #374151; }
+        .pan-container { touch-action: none; cursor: grab; }
+        .pan-container:active { cursor: grabbing; }
+    </style>
+</head>
+<body class="bg-dark-950 text-slate-100 min-h-screen flex flex-col justify-center items-center p-2 sm:p-4 md:p-6 select-none font-sans">
+
+    <!-- CONFIG API URL -->
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycby1jJ3UZwy-tZqviuMe98-_8zbGkWQAtXnJ48vmkaClZDxTwkKuRmZrZFcBQTITDrjc/exec";
+    </script>
+
+    <!-- LOADING OVERLAY -->
+    <div id="loader" class="fixed inset-0 bg-dark-950/85 backdrop-blur-md z-50 flex flex-col items-center justify-center hidden">
+        <div class="w-16 h-16 border-4 border-sky-500 border-t-transparent rounded-full animate-spin mb-4 shadow-lg shadow-sky-500/20"></div>
+        <p id="loader-text" class="text-sky-400 font-semibold text-lg animate-pulse">กำลังโหลดข้อมูลระบบ AI...</p>
+    </div>
+
+    <!-- 1. CALCULATOR SCREEN (LOCK SCREEN) -->
+    <div id="view-calculator" class="w-full max-w-lg bg-dark-800 border border-slate-700/60 rounded-3xl p-6 md:p-8 shadow-2xl backdrop-blur-xl">
+        <div class="flex items-center justify-between mb-4">
+            <span class="text-xs font-bold uppercase tracking-widest text-slate-400"><i class="fa-solid fa-calculator text-sky-400 mr-2"></i>เครื่องคิดเลขระบบความปลอดภัย</span>
+            <span class="text-xs text-sky-400 bg-sky-950/80 px-2.5 py-1 rounded-full border border-sky-800/60">Unlock Key: 0</span>
+        </div>
+        <!-- Display -->
+        <div class="bg-dark-900 border border-slate-700 rounded-2xl p-5 mb-6 text-right shadow-inner">
+            <div id="calc-history" class="text-sm text-slate-400 h-6 overflow-hidden"></div>
+            <div id="calc-display" class="text-4xl font-extrabold text-white tracking-wider overflow-x-auto">0</div>
+        </div>
+        <!-- Keypad -->
+        <div class="grid grid-cols-4 gap-3">
+            <button onclick="calcBtn('C')" class="p-4 md:p-5 bg-red-950/40 border border-red-900/50 text-red-400 rounded-2xl text-xl font-bold hover:bg-red-900/50 active:scale-95 transition">C</button>
+            <button onclick="calcBtn('(')" class="p-4 md:p-5 bg-dark-700 border border-slate-600 text-slate-200 rounded-2xl text-xl font-bold hover:bg-dark-600 active:scale-95 transition">(</button>
+            <button onclick="calcBtn(')')" class="p-4 md:p-5 bg-dark-700 border border-slate-600 text-slate-200 rounded-2xl text-xl font-bold hover:bg-dark-600 active:scale-95 transition">)</button>
+            <button onclick="calcBtn('/')" class="p-4 md:p-5 bg-sky-950/40 border border-sky-900/50 text-sky-400 rounded-2xl text-xl font-bold hover:bg-sky-900/50 active:scale-95 transition">÷</button>
+            
+            <button onclick="calcBtn('7')" class="p-4 md:p-5 bg-dark-700 border border-slate-600 text-white rounded-2xl text-xl font-bold hover:bg-dark-600 active:scale-95 transition">7</button>
+            <button onclick="calcBtn('8')" class="p-4 md:p-5 bg-dark-700 border border-slate-600 text-white rounded-2xl text-xl font-bold hover:bg-dark-600 active:scale-95 transition">8</button>
+            <button onclick="calcBtn('9')" class="p-4 md:p-5 bg-dark-700 border border-slate-600 text-white rounded-2xl text-xl font-bold hover:bg-dark-600 active:scale-95 transition">9</button>
+            <button onclick="calcBtn('*')" class="p-4 md:p-5 bg-sky-950/40 border border-sky-900/50 text-sky-400 rounded-2xl text-xl font-bold hover:bg-sky-900/50 active:scale-95 transition">×</button>
+            
+            <button onclick="calcBtn('4')" class="p-4 md:p-5 bg-dark-700 border border-slate-600 text-white rounded-2xl text-xl font-bold hover:bg-dark-600 active:scale-95 transition">4</button>
+            <button onclick="calcBtn('5')" class="p-4 md:p-5 bg-dark-700 border border-slate-600 text-white rounded-2xl text-xl font-bold hover:bg-dark-600 active:scale-95 transition">5</button>
+            <button onclick="calcBtn('6')" class="p-4 md:p-5 bg-dark-700 border border-slate-600 text-white rounded-2xl text-xl font-bold hover:bg-dark-600 active:scale-95 transition">6</button>
+            <button onclick="calcBtn('-')" class="p-4 md:p-5 bg-sky-950/40 border border-sky-900/50 text-sky-400 rounded-2xl text-xl font-bold hover:bg-sky-900/50 active:scale-95 transition">-</button>
+            
+            <button onclick="calcBtn('1')" class="p-4 md:p-5 bg-dark-700 border border-slate-600 text-white rounded-2xl text-xl font-bold hover:bg-dark-600 active:scale-95 transition">1</button>
+            <button onclick="calcBtn('2')" class="p-4 md:p-5 bg-dark-700 border border-slate-600 text-white rounded-2xl text-xl font-bold hover:bg-dark-600 active:scale-95 transition">2</button>
+            <button onclick="calcBtn('3')" class="p-4 md:p-5 bg-dark-700 border border-slate-600 text-white rounded-2xl text-xl font-bold hover:bg-dark-600 active:scale-95 transition">3</button>
+            <button onclick="calcBtn('+')" class="p-4 md:p-5 bg-sky-950/40 border border-sky-900/50 text-sky-400 rounded-2xl text-xl font-bold hover:bg-sky-900/50 active:scale-95 transition">+</button>
+            
+            <button onclick="calcBtn('0')" class="col-span-2 p-4 md:p-5 bg-dark-700 border border-slate-600 text-white rounded-2xl text-xl font-bold hover:bg-dark-600 active:scale-95 transition">0</button>
+            <button onclick="calcBtn('.')" class="p-4 md:p-5 bg-dark-700 border border-slate-600 text-white rounded-2xl text-xl font-bold hover:bg-dark-600 active:scale-95 transition">.</button>
+            <button onclick="calcEvaluate()" class="p-4 md:p-5 bg-gradient-to-r from-sky-500 to-indigo-600 text-white rounded-2xl text-xl font-bold hover:opacity-90 active:scale-95 transition shadow-lg shadow-sky-500/25">=</button>
+        </div>
+    </div>
+
+    <!-- 2. MAIN MENU SCREEN -->
+    <div id="view-menu" class="w-full max-w-4xl bg-dark-800 border border-slate-700/60 rounded-3xl p-6 md:p-10 shadow-2xl backdrop-blur-xl hidden">
+        <div class="flex items-center justify-between mb-8 pb-4 border-b border-slate-700/60">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-extrabold text-white flex items-center gap-3">
+                    <span class="p-2.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded-2xl"><i class="fa-solid fa-shield-halved"></i></span>
+                    AI Control Panel
+                </h1>
+                <p class="text-sm md:text-base text-slate-400 mt-1">เลือกระบบการทำงานที่คุณต้องการเข้าใช้งาน</p>
+            </div>
+            <button onclick="lockApp()" class="w-12 h-12 bg-dark-700 border border-slate-600 rounded-2xl flex items-center justify-center text-slate-300 hover:text-red-400 hover:border-red-500/40 transition text-lg" title="ล็อกแอป"><i class="fa-solid fa-lock"></i></button>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <button onclick="openExamSelect()" class="p-6 bg-dark-700/50 border border-slate-700/80 rounded-2xl flex flex-col items-start justify-between hover:border-sky-500 hover:bg-dark-700 transition group h-48 shadow-lg">
+                <div class="w-14 h-14 bg-sky-950 border border-sky-800/80 rounded-2xl flex items-center justify-center text-sky-400 text-2xl group-hover:scale-110 transition shadow-inner"><i class="fa-solid fa-book-open"></i></div>
+                <div class="text-left mt-4">
+                    <div class="text-lg font-bold text-white group-hover:text-sky-300 transition">1. แนวข้อสอบ</div>
+                    <div class="text-xs text-slate-400 mt-1">ทบทวนคำถามพร้อมคำตอบ (เอกสาร / รูปภาพข้อสอบ)</div>
+                </div>
+            </button>
+            
+            <button onclick="openQuizMode()" class="p-6 bg-dark-700/50 border border-slate-700/80 rounded-2xl flex flex-col items-start justify-between hover:border-indigo-500 hover:bg-dark-700 transition group h-48 shadow-lg">
+                <div class="w-14 h-14 bg-indigo-950 border border-indigo-800/80 rounded-2xl flex items-center justify-center text-indigo-400 text-2xl group-hover:scale-110 transition shadow-inner"><i class="fa-solid fa-brain"></i></div>
+                <div class="text-left mt-4">
+                    <div class="text-lg font-bold text-white group-hover:text-indigo-300 transition">2. แนวคำถาม (Quiz 35 ข้อ)</div>
+                    <div class="text-xs text-slate-400 mt-1">สุ่มทำข้อสอบ เลือกคำตอบ สรุปคะแนนผลสอบ</div>
+                </div>
+            </button>
+            
+            <button onclick="promptAdminPin()" class="p-6 bg-dark-700/50 border border-slate-700/80 rounded-2xl flex flex-col items-start justify-between hover:border-emerald-500 hover:bg-dark-700 transition group h-48 shadow-lg">
+                <div class="w-14 h-14 bg-emerald-950 border border-emerald-800/80 rounded-2xl flex items-center justify-center text-emerald-400 text-2xl group-hover:scale-110 transition shadow-inner"><i class="fa-solid fa-gear"></i></div>
+                <div class="text-left mt-4">
+                    <div class="text-lg font-bold text-white group-hover:text-emerald-300 transition">3. แก้ไขข้อมูล (Admin)</div>
+                    <div class="text-xs text-slate-400 mt-1">จัดการแก้ไขข้อมูลบน Google ชีต</div>
+                </div>
+            </button>
+        </div>
+    </div>
+
+    <!-- 2.5 EXAM SELECT SUB-MENU -->
+    <div id="view-exam-select" class="w-full max-w-3xl bg-dark-800 border border-slate-700/60 rounded-3xl p-6 md:p-8 shadow-2xl backdrop-blur-xl hidden">
+        <div class="flex items-center justify-between mb-8 pb-4 border-b border-slate-700/60">
+            <button onclick="backToMenu()" class="text-slate-400 hover:text-white transition flex items-center gap-2 font-medium"><i class="fa-solid fa-arrow-left"></i> กลับสู่เมนูหลัก</button>
+            <span class="text-xs font-bold uppercase tracking-widest text-sky-400 bg-sky-950/80 px-4 py-1.5 rounded-full border border-sky-800/80">รูปแบบแนวข้อสอบ</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <button onclick="openExamMode()" class="p-8 bg-dark-700/50 border border-slate-700 rounded-3xl flex flex-col items-center text-center hover:border-sky-500 hover:bg-dark-700 transition group shadow-lg">
+                <div class="w-20 h-20 bg-sky-950 border border-sky-800 rounded-2xl flex items-center justify-center text-sky-400 text-3xl mb-4 group-hover:scale-110 transition shadow-inner"><i class="fa-solid fa-file-lines"></i></div>
+                <div class="text-xl font-bold text-white mb-2">1. เอกสารข้อสอบ</div>
+                <div class="text-sm text-slate-400">ดึงข้อมูลคำถาม-คำตอบ จาก Google ชีต</div>
+            </button>
+            
+            <button onclick="openPhotoExamMode()" class="p-8 bg-dark-700/50 border border-slate-700 rounded-3xl flex flex-col items-center text-center hover:border-emerald-500 hover:bg-dark-700 transition group shadow-lg">
+                <div class="w-20 h-20 bg-emerald-950 border border-emerald-800 rounded-2xl flex items-center justify-center text-emerald-400 text-3xl mb-4 group-hover:scale-110 transition shadow-inner"><i class="fa-solid fa-images"></i></div>
+                <div class="text-xl font-bold text-white mb-2">2. รูปภาพข้อสอบ</div>
+                <div class="text-sm text-slate-400">ดึงรูปภาพจากโฟลเดอร์ photo (.png) พร้อมฟังก์ชันซูม</div>
+            </button>
+        </div>
+    </div>
+
+    <!-- 3. EXAM VIEWER SCREEN (DOCS) -->
+    <div id="view-exam" class="w-full max-w-5xl bg-dark-800 border border-slate-700/60 rounded-3xl p-6 md:p-8 shadow-2xl backdrop-blur-xl hidden min-h-[75vh] flex flex-col justify-between">
+        <div>
+            <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-700/60">
+                <button onclick="openExamSelect()" class="text-slate-400 hover:text-white transition flex items-center gap-2 font-medium"><i class="fa-solid fa-arrow-left"></i> เลือกรูปแบบ</button>
+                <span id="exam-counter" class="text-sm font-bold text-sky-400 bg-sky-950 px-4 py-1.5 rounded-full border border-sky-800">0 / 0</span>
+            </div>
+            <!-- Card Container -->
+            <div id="exam-card-container" class="bg-dark-900 border border-slate-700 rounded-2xl p-6 md:p-8 mb-6 min-h-[380px] flex flex-col justify-between shadow-inner">
+                <div>
+                    <div class="text-sm text-sky-400 font-bold mb-3 uppercase tracking-wider flex items-center gap-2"><i class="fa-solid fa-circle-question"></i> คำถามข้อสอบ</div>
+                    <div id="exam-q" class="text-xl md:text-2xl font-semibold text-white mb-8 leading-relaxed">กำลังโหลด...</div>
+                </div>
+                <div>
+                    <div class="text-sm text-emerald-400 font-bold mb-3 uppercase tracking-wider flex items-center gap-2"><i class="fa-solid fa-circle-check"></i> เฉลยคำตอบถูกต้อง</div>
+                    <div id="exam-a" class="p-5 bg-emerald-950/40 border border-emerald-900/80 text-emerald-200 rounded-2xl text-base md:text-lg font-medium shadow-lg">กำลังโหลด...</div>
+                </div>
+            </div>
+        </div>
+        <!-- Controls -->
+        <div class="flex justify-between gap-4 pt-2">
+            <button onclick="prevExam()" class="flex-1 py-4 bg-dark-700 hover:bg-dark-600 border border-slate-600 text-white rounded-2xl font-bold text-lg transition flex items-center justify-center gap-2 shadow-lg"><i class="fa-solid fa-chevron-left"></i> ก่อนหน้า</button>
+            <button onclick="nextExam()" class="flex-1 py-4 bg-sky-600 hover:bg-sky-500 text-white rounded-2xl font-bold text-lg transition shadow-lg shadow-sky-600/30 flex items-center justify-center gap-2">ถัดไป <i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+    </div>
+
+    <!-- 3.5 EXAM VIEWER SCREEN (PHOTOS WITH ZOOM) -->
+    <div id="view-exam-photos" class="w-full max-w-6xl bg-dark-800 border border-slate-700/60 rounded-3xl p-4 sm:p-6 md:p-8 shadow-2xl backdrop-blur-xl hidden min-h-[85vh] flex flex-col justify-between">
+        <div>
+            <!-- Header Controls -->
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4 pb-4 border-b border-slate-700/60">
+                <button onclick="openExamSelect()" class="text-slate-400 hover:text-white transition flex items-center gap-2 font-medium"><i class="fa-solid fa-arrow-left"></i> เลือกรูปแบบ</button>
+                
+                <!-- Zoom Controls Toolbar -->
+                <div class="flex items-center gap-2 bg-dark-900 p-1.5 rounded-2xl border border-slate-700 shadow-inner">
+                    <button onclick="zoomPhoto(-0.2)" class="w-10 h-10 bg-dark-700 hover:bg-dark-600 rounded-xl flex items-center justify-center text-slate-200 font-bold transition" title="ซูมออก"><i class="fa-solid fa-minus"></i></button>
+                    <button onclick="resetPhotoZoom()" class="px-3 h-10 bg-dark-700 hover:bg-dark-600 rounded-xl flex items-center justify-center text-xs font-bold text-sky-400 transition" title="รีเซ็ตซูม"><span id="photo-zoom-level">100%</span></button>
+                    <button onclick="zoomPhoto(0.2)" class="w-10 h-10 bg-dark-700 hover:bg-dark-600 rounded-xl flex items-center justify-center text-slate-200 font-bold transition" title="ซูมเข้า"><i class="fa-solid fa-plus"></i></button>
+                    <div class="w-px h-6 bg-slate-700 mx-1"></div>
+                    <button onclick="openPhotoModal()" class="w-10 h-10 bg-emerald-950/80 text-emerald-400 border border-emerald-800/80 hover:bg-emerald-900 rounded-xl flex items-center justify-center transition" title="ขยายเต็มจอ Lightbox"><i class="fa-solid fa-expand"></i></button>
+                </div>
+
+                <span id="photo-counter" class="text-sm font-bold text-emerald-400 bg-emerald-950 px-4 py-1.5 rounded-full border border-emerald-800">0 / 0</span>
+            </div>
+
+            <!-- Interactive Photo Viewport -->
+            <div id="photo-viewport" class="bg-dark-950 border border-slate-700/80 rounded-2xl mb-4 h-[55vh] md:h-[62vh] flex items-center justify-center overflow-hidden relative pan-container shadow-inner">
+                <div id="photo-wrapper" class="transition-transform duration-100 ease-out origin-center flex items-center justify-center w-full h-full">
+                    <img id="exam-photo-img" src="" alt="Exam Photo" class="max-h-full max-w-full object-contain rounded-lg shadow-2xl pointer-events-none">
+                </div>
+                <div class="absolute bottom-3 right-3 bg-dark-900/80 text-slate-400 text-xs px-3 py-1.5 rounded-xl border border-slate-700/80 backdrop-blur-sm pointer-events-none flex items-center gap-1.5">
+                    <i class="fa-solid fa-hand-pointer text-sky-400"></i> หมุนลูกกลิ้งเม้าส์เพื่อซูม / คลิกลากเพื่อเลื่อน
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="flex justify-between gap-4 pt-2">
+            <button onclick="prevPhoto()" class="flex-1 py-4 bg-dark-700 hover:bg-dark-600 border border-slate-600 text-white rounded-2xl font-bold text-lg transition flex items-center justify-center gap-2 shadow-lg"><i class="fa-solid fa-chevron-left"></i> รูปก่อนหน้า</button>
+            <button onclick="nextPhoto()" class="flex-1 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-bold text-lg transition shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2">รูปถัดไป <i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+    </div>
+
+    <!-- 3.6 FULLSCREEN PHOTO LIGHTBOX MODAL -->
+    <div id="modal-photo-lightbox" class="fixed inset-0 bg-dark-950/95 backdrop-blur-lg z-50 flex flex-col justify-between p-4 hidden">
+        <!-- Top Toolbar -->
+        <div class="flex items-center justify-between z-10 bg-dark-900/80 p-3 rounded-2xl border border-slate-800 backdrop-blur-md">
+            <div class="text-sm font-bold text-emerald-400 flex items-center gap-2">
+                <i class="fa-solid fa-magnifying-glass-plus"></i> โหมดซูมขยายรูปภาพเต็มจอ
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="zoomModalPhoto(-0.25)" class="w-10 h-10 bg-dark-700 hover:bg-dark-600 rounded-xl text-white font-bold transition"><i class="fa-solid fa-minus"></i></button>
+                <button onclick="resetModalPhotoZoom()" class="px-3 h-10 bg-dark-700 hover:bg-dark-600 rounded-xl text-xs font-bold text-sky-400 transition"><span id="modal-zoom-level">100%</span></button>
+                <button onclick="zoomModalPhoto(0.25)" class="w-10 h-10 bg-dark-700 hover:bg-dark-600 rounded-xl text-white font-bold transition"><i class="fa-solid fa-plus"></i></button>
+                <button onclick="closePhotoModal()" class="w-10 h-10 bg-red-950/80 border border-red-800 text-red-400 hover:bg-red-900 rounded-xl font-bold transition ml-2"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+        </div>
+
+        <!-- Lightbox Canvas -->
+        <div id="modal-photo-viewport" class="w-full h-full flex-1 overflow-hidden relative pan-container my-2 flex items-center justify-center">
+            <div id="modal-photo-wrapper" class="transition-transform duration-75 ease-out origin-center flex items-center justify-center w-full h-full">
+                <img id="modal-photo-img" src="" alt="Fullscreen Exam Photo" class="max-h-full max-w-full object-contain rounded-lg shadow-2xl pointer-events-none">
+            </div>
+        </div>
+
+        <!-- Bottom Controls -->
+        <div class="flex items-center justify-between gap-4 z-10 bg-dark-900/80 p-3 rounded-2xl border border-slate-800 backdrop-blur-md">
+            <button onclick="prevPhoto()" class="px-6 py-2.5 bg-dark-700 hover:bg-dark-600 text-white rounded-xl text-sm font-bold transition flex items-center gap-2"><i class="fa-solid fa-chevron-left"></i> ก่อนหน้า</button>
+            <span id="modal-photo-counter" class="text-xs font-bold text-slate-300">0 / 0</span>
+            <button onclick="nextPhoto()" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-bold transition flex items-center gap-2">ถัดไป <i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+    </div>
+
+    <!-- 4. QUIZ SCREEN -->
+    <div id="view-quiz" class="w-full max-w-5xl bg-dark-800 border border-slate-700/60 rounded-3xl p-6 md:p-8 shadow-2xl backdrop-blur-xl hidden min-h-[80vh] flex flex-col justify-between">
+        <div>
+            <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-700/60">
+                <button onclick="backToMenu()" class="text-slate-400 hover:text-white transition flex items-center gap-2 font-medium"><i class="fa-solid fa-arrow-left"></i> เมนูหลัก</button>
+                <div class="flex items-center gap-3">
+                    <span id="quiz-counter" class="text-sm font-bold text-indigo-400 bg-indigo-950 px-4 py-1.5 rounded-full border border-indigo-800">ข้อ 1 / 35</span>
+                    <button onclick="toggleUnansweredModal()" class="relative bg-amber-950/70 border border-amber-800/80 text-amber-400 px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 hover:bg-amber-900/80 transition shadow-lg">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        ยังไม่ตอบ: <span id="unanswered-badge" class="font-extrabold text-sm">35</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Quiz Card -->
+            <div id="quiz-card-container" class="bg-dark-900 border border-slate-700 rounded-2xl p-6 md:p-8 mb-6 min-h-[350px] flex flex-col justify-between shadow-inner">
+                <div>
+                    <div id="quiz-q" class="text-lg md:text-xl font-bold text-white mb-6 leading-relaxed">กำลังโหลดคำถาม...</div>
+                </div>
+                <div id="quiz-choices" class="space-y-3 md:space-y-4">
+                    <!-- Choices injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz Navigation & Submit -->
+        <div class="flex items-center justify-between gap-4 pt-2">
+            <button onclick="prevQuiz()" class="px-6 py-4 bg-dark-700 hover:bg-dark-600 border border-slate-600 text-white rounded-2xl font-bold text-lg transition shadow-lg flex items-center justify-center gap-2"><i class="fa-solid fa-chevron-left"></i> ก่อนหน้า</button>
+            <button onclick="submitQuiz()" class="flex-1 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:opacity-90 text-white rounded-2xl font-extrabold text-lg transition shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2"><i class="fa-solid fa-paper-plane"></i> ส่งคำตอบตรวจผล</button>
+            <button onclick="nextQuiz()" class="px-6 py-4 bg-dark-700 hover:bg-dark-600 border border-slate-600 text-white rounded-2xl font-bold text-lg transition shadow-lg flex items-center justify-center gap-2">ถัดไป <i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+    </div>
+
+    <!-- 5. UNANSWERED QUICK JUMP MODAL -->
+    <div id="modal-unanswered" class="fixed inset-0 bg-dark-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-dark-800 border border-slate-700 rounded-3xl p-6 md:p-8 w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-700">
+                <h3 class="font-extrabold text-white text-xl flex items-center gap-2"><i class="fa-solid fa-list-check text-amber-400"></i> ข้อสอบที่ยังไม่ได้ตอบ</h3>
+                <button onclick="toggleUnansweredModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <p class="text-xs md:text-sm text-slate-400 mb-6">คลิกเลือกหมายเลขข้อสอบเพื่อกระโดดไปยังคำถามนั้นได้ทันที</p>
+            <div id="unanswered-grid" class="grid grid-cols-5 sm:grid-cols-7 gap-3 overflow-y-auto pr-2">
+                <!-- Injected buttons -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. QUIZ RESULT SUMMARY SCREEN -->
+    <div id="view-result" class="w-full max-w-4xl bg-dark-800 border border-slate-700/60 rounded-3xl p-6 md:p-10 shadow-2xl backdrop-blur-xl hidden">
+        <div class="text-center mb-8">
+            <div class="w-20 h-20 bg-emerald-950 border border-emerald-800 rounded-3xl mx-auto flex items-center justify-center text-emerald-400 text-3xl mb-4 shadow-xl shadow-emerald-950/50">
+                <i class="fa-solid fa-award"></i>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-extrabold text-white">สรุปผลการทดสอบ</h2>
+            <p id="result-score-text" class="text-4xl md:text-5xl font-black text-sky-400 my-3">0 / 35</p>
+            <div class="flex justify-center gap-6 text-sm md:text-base text-slate-300 mt-2">
+                <span class="bg-emerald-950/50 px-4 py-1.5 rounded-xl border border-emerald-800"><i class="fa-solid fa-circle-check text-emerald-400 mr-1.5"></i> ตอบถูก: <span id="res-correct" class="text-emerald-400 font-extrabold">0</span> ข้อ</span>
+                <span class="bg-red-950/50 px-4 py-1.5 rounded-xl border border-red-800"><i class="fa-solid fa-circle-xmark text-red-400 mr-1.5"></i> ตอบผิด: <span id="res-wrong" class="text-red-400 font-extrabold">0</span> ข้อ</span>
+            </div>
+        </div>
+
+        <div class="bg-dark-900 border border-slate-700 rounded-2xl p-4 md:p-6 mb-8 max-h-[380px] overflow-y-auto space-y-4 shadow-inner" id="result-details">
+            <!-- Details of wrong answers -->
+        </div>
+
+        <button onclick="backToMenu()" class="w-full py-4 bg-sky-600 hover:bg-sky-500 text-white rounded-2xl font-extrabold text-lg transition shadow-lg shadow-sky-600/30">กลับสู่เมนูหลัก</button>
+    </div>
+
+    <!-- 7. ADMIN EDIT SCREEN -->
+    <div id="view-admin" class="w-full max-w-6xl bg-dark-800 border border-slate-700/60 rounded-3xl p-6 md:p-8 shadow-2xl backdrop-blur-xl hidden min-h-[85vh] flex flex-col justify-between">
+        <div>
+            <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-700/60">
+                <div>
+                    <h2 class="text-2xl font-bold text-white flex items-center gap-2"><i class="fa-solid fa-gear text-emerald-400"></i> แก้ไขข้อมูล (Admin Panel)</h2>
+                    <p class="text-xs md:text-sm text-slate-400 mt-1">จัดการข้อมูลชีต แนวข้อสอบ และ แนวคำถาม</p>
+                </div>
+                <button onclick="backToMenu()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-2xl"></i></button>
+            </div>
+
+            <!-- Tabs -->
+            <div class="flex gap-3 mb-6">
+                <button onclick="switchAdminTab('exam')" id="tab-btn-exam" class="px-6 py-3 bg-sky-600 text-white rounded-2xl text-sm font-bold transition shadow-lg">ชีต: แนวข้อสอบ</button>
+                <button onclick="switchAdminTab('quiz')" id="tab-btn-quiz" class="px-6 py-3 bg-dark-700 text-slate-300 rounded-2xl text-sm font-bold transition hover:bg-dark-600">ชีต: แนวคำถาม</button>
+            </div>
+
+            <div class="bg-dark-900 border border-slate-700 rounded-2xl p-4 mb-6 max-h-[480px] overflow-x-auto overflow-y-auto shadow-inner">
+                <table id="admin-table" class="w-full text-left text-sm text-slate-300 border-collapse">
+                    <!-- Table headers & rows -->
+                </table>
+            </div>
+        </div>
+
+        <div class="flex justify-between items-center gap-4 pt-2">
+            <button onclick="addRowAdmin()" class="px-6 py-3.5 bg-dark-700 hover:bg-dark-600 border border-slate-600 text-white rounded-2xl text-sm font-bold transition flex items-center gap-2"><i class="fa-solid fa-plus text-emerald-400"></i> เพิ่มแถวใหม่</button>
+            <button onclick="saveAdminData()" class="px-8 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-sm font-bold transition shadow-lg shadow-emerald-600/30 flex items-center gap-2"><i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลลง Google ชีต</button>
+        </div>
+    </div>
+
+    <!-- 8. ADMIN EDIT ROW MODAL (POPUP) -->
+    <div id="modal-admin-edit" class="fixed inset-0 bg-dark-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-dark-800 border border-slate-700 rounded-3xl p-6 md:p-8 w-full max-w-3xl max-h-[85vh] flex flex-col shadow-2xl">
+            <div class="flex items-center justify-between mb-6 pb-3 border-b border-slate-700">
+                <h3 class="font-bold text-white text-xl flex items-center gap-2"><i class="fa-solid fa-pen-to-square text-sky-400"></i> แก้ไขข้อมูลแถวที่ <span id="edit-row-num"></span></h3>
+                <button onclick="closeAdminEditModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div id="edit-form-container" class="space-y-5 overflow-y-auto pr-2 flex-1 mb-6">
+                <!-- Dynamic fields injected here -->
+            </div>
+            <div class="flex justify-end gap-4 pt-3 border-t border-slate-700">
+                <button onclick="closeAdminEditModal()" class="px-6 py-3 bg-dark-700 hover:bg-dark-600 text-slate-300 rounded-2xl text-sm font-bold transition">ยกเลิก</button>
+                <button onclick="saveAdminRowEdit()" class="px-8 py-3 bg-sky-600 hover:bg-sky-500 text-white rounded-2xl text-sm font-bold transition shadow-lg shadow-sky-600/30">บันทึกการแก้ไข</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        let calcExpression = "";
+        let globalData = { exam: [], quiz: [] };
+        
+        // Exam state
+        let currentExamIndex = 0;
+        let examPhotos = [];
+        let currentPhotoIndex = 0;
+
+        // Photo Zoom and Pan state
+        let photoZoomScale = 1.0;
+        let photoPanX = 0;
+        let photoPanY = 0;
+        let isDraggingPhoto = false;
+        let startDragX = 0;
+        let startDragY = 0;
+
+        // Modal Photo Zoom state
+        let modalZoomScale = 1.0;
+        let modalPanX = 0;
+        let modalPanY = 0;
+        let isDraggingModalPhoto = false;
+        let modalStartDragX = 0;
+        let modalStartDragY = 0;
+
+        // Quiz state
+        let quizQuestions = [];
+        let currentQuizIndex = 0;
+        let userAnswers = {};
+
+        // Admin state
+        let activeAdminTab = 'exam';
+        let adminTableData = { exam: [], quiz: [] };
+        let editingRowIndex = -1;
+
+        // --- CALCULATOR LOGIC ---
+        function calcBtn(val) {
+            if (val === 'C') {
+                clearCalc();
+                return;
+            }
+            calcExpression += val;
+            updateCalcDisplay();
+        }
+
+        function calcEvaluate() {
+            if (calcExpression === "") return;
+            try {
+                let sanitized = calcExpression.replace(/×/g, '*').replace(/÷/g, '/');
+                let result = eval(sanitized);
+                document.getElementById('calc-history').innerText = calcExpression + " =";
+                calcExpression = String(result);
+                updateCalcDisplay();
+
+                if (result === 0) {
+                    // UNLOCK APP
+                    setTimeout(() => {
+                        showView('view-menu');
+                        fetchDataFromSheets();
+                    }, 300);
+                }
+            } catch (e) {
+                calcExpression = "Error";
+                updateCalcDisplay();
+                setTimeout(() => { clearCalc(); }, 1000);
+            }
+        }
+
+        function clearCalc() {
+            calcExpression = "";
+            document.getElementById('calc-history').innerText = "";
+            updateCalcDisplay();
+        }
+
+        function updateCalcDisplay() {
+            document.getElementById('calc-display').innerText = calcExpression === "" ? "0" : calcExpression;
+        }
+
+        function lockApp() {
+            clearCalc();
+            showView('view-calculator');
+        }
+
+        function showView(viewId) {
+            ['view-calculator', 'view-menu', 'view-exam-select', 'view-exam', 'view-exam-photos', 'view-quiz', 'view-result', 'view-admin'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(viewId).classList.remove('hidden');
+        }
+
+        function showLoader(text) {
+            document.getElementById('loader-text').innerText = text;
+            document.getElementById('loader').classList.remove('hidden');
+        }
+
+        function hideLoader() {
+            document.getElementById('loader').classList.add('hidden');
+        }
+
+        function backToMenu() {
+            showView('view-menu');
+        }
+
+        function openExamSelect() {
+            showView('view-exam-select');
+        }
+
+        // --- FETCH DATA FROM GOOGLE SHEETS ---
+        async function fetchDataFromSheets() {
+            showLoader("กำลังซิงค์ข้อมูลจาก Google ชีต...");
+            try {
+                let res = await fetch(`${API_URL}?action=getData`);
+                let data = await res.json();
+                if(data.status === 'success') {
+                    globalData.exam = data.exam.slice(1);
+                    globalData.quiz = data.quiz.slice(1);
+                    adminTableData.exam = data.exam;
+                    adminTableData.quiz = data.quiz;
+                }
+            } catch (err) {
+                console.warn("Google Sheet sync warning / offline mode");
+            } finally {
+                hideLoader();
+            }
+        }
+
+        // --- 1. EXAM MODE (DOCS) ---
+        function openExamMode() {
+            if(globalData.exam.length === 0) {
+                alert("ไม่พบข้อมูลแนวข้อสอบใน Google ชีต");
+                return;
+            }
+            currentExamIndex = 0;
+            renderExamCard();
+            showView('view-exam');
+        }
+
+        function renderExamCard() {
+            let row = globalData.exam[currentExamIndex];
+            let q = row[1] || "-";
+            let a = row[2] || "-";
+            
+            document.getElementById('exam-q').innerText = q;
+            document.getElementById('exam-a').innerText = a;
+            document.getElementById('exam-counter').innerText = `${currentExamIndex + 1} / ${globalData.exam.length}`;
+        }
+
+        function nextExam() {
+            if(currentExamIndex < globalData.exam.length - 1) {
+                currentExamIndex++;
+                renderExamCard();
+            }
+        }
+
+        function prevExam() {
+            if(currentExamIndex > 0) {
+                currentExamIndex--;
+                renderExamCard();
+            }
+        }
+
+        // --- 1.2 EXAM MODE (PHOTOS WITH ZOOM) ---
+        async function openPhotoExamMode() {
+            showLoader("กำลังสแกนหาไฟล์รูปภาพในโฟลเดอร์ photo...");
+            examPhotos = [];
+            let i = 1;
+            let maxCheck = 100;
+            
+            while (i <= maxCheck) {
+                let path = `photo/${i}.png`;
+                let exists = await checkImageExists(path);
+                if (exists) {
+                    examPhotos.push(path);
+                    i++;
+                } else {
+                    let foundAnyMore = false;
+                    for (let j = 0; j < 3; j++) {
+                        let nextPath = `photo/${i + j}.png`;
+                        if (await checkImageExists(nextPath)) {
+                            foundAnyMore = true;
+                            break;
+                        }
+                    }
+                    if (!foundAnyMore) break;
+                    i++;
+                }
+            }
+
+            hideLoader();
+            if (examPhotos.length === 0) {
+                alert("ไม่พบไฟล์รูปภาพนามสกุล .png ในโฟลเดอร์ photo (เช่น 1.png, 2.png)");
+                return;
+            }
+            currentPhotoIndex = 0;
+            renderPhoto();
+            showView('view-exam-photos');
+        }
+
+        function checkImageExists(url) {
+            return new Promise((resolve) => {
+                let img = new Image();
+                img.onload = () => resolve(true);
+                img.onerror = () => resolve(false);
+                img.src = url;
+            });
+        }
+
+        function renderPhoto() {
+            if (examPhotos.length === 0) return;
+            document.getElementById('exam-photo-img').src = examPhotos[currentPhotoIndex];
+            document.getElementById('photo-counter').innerText = `${currentPhotoIndex + 1} / ${examPhotos.length}`;
+            
+            if(!document.getElementById('modal-photo-lightbox').classList.contains('hidden')) {
+                document.getElementById('modal-photo-img').src = examPhotos[currentPhotoIndex];
+                document.getElementById('modal-photo-counter').innerText = `${currentPhotoIndex + 1} / ${examPhotos.length}`;
+            }
+            
+            resetPhotoZoom();
+        }
+
+        function nextPhoto() {
+            if (currentPhotoIndex < examPhotos.length - 1) {
+                currentPhotoIndex++;
+                renderPhoto();
+            }
+        }
+
+        function prevPhoto() {
+            if (currentPhotoIndex > 0) {
+                currentPhotoIndex--;
+                renderPhoto();
+            }
+        }
+
+        // --- ZOOM & PAN CONTROLS (MAIN PHOTO VIEW) ---
+        function zoomPhoto(delta) {
+            photoZoomScale = Math.max(0.8, Math.min(4.0, photoZoomScale + delta));
+            if(photoZoomScale === 1.0) {
+                photoPanX = 0;
+                photoPanY = 0;
+            }
+            applyPhotoTransform();
+        }
+
+        function resetPhotoZoom() {
+            photoZoomScale = 1.0;
+            photoPanX = 0;
+            photoPanY = 0;
+            applyPhotoTransform();
+        }
+
+        function applyPhotoTransform() {
+            let wrapper = document.getElementById('photo-wrapper');
+            wrapper.style.transform = `translate(${photoPanX}px, ${photoPanY}px) scale(${photoZoomScale})`;
+            document.getElementById('photo-zoom-level').innerText = `${Math.round(photoZoomScale * 100)}%`;
+        }
+
+        // Mouse Drag / Panning for Photo Viewport
+        const photoViewport = document.getElementById('photo-viewport');
+        
+        photoViewport.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            let zoomDelta = e.deltaY < 0 ? 0.15 : -0.15;
+            zoomPhoto(zoomDelta);
+        });
+
+        photoViewport.addEventListener('mousedown', (e) => {
+            if (photoZoomScale <= 1.0) return;
+            isDraggingPhoto = true;
+            startDragX = e.clientX - photoPanX;
+            startDragY = e.clientY - photoPanY;
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isDraggingPhoto) return;
+            photoPanX = e.clientX - startDragX;
+            photoPanY = e.clientY - startDragY;
+            applyPhotoTransform();
+        });
+
+        window.addEventListener('mouseup', () => { isDraggingPhoto = false; });
+
+        // Touch gesture panning
+        photoViewport.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1 && photoZoomScale > 1.0) {
+                isDraggingPhoto = true;
+                startDragX = e.touches[0].clientX - photoPanX;
+                startDragY = e.touches[0].clientY - photoPanY;
+            }
+        });
+
+        photoViewport.addEventListener('touchmove', (e) => {
+            if (isDraggingPhoto && e.touches.length === 1) {
+                photoPanX = e.touches[0].clientX - startDragX;
+                photoPanY = e.touches[0].clientY - startDragY;
+                applyPhotoTransform();
+            }
+        });
+
+        photoViewport.addEventListener('touchend', () => { isDraggingPhoto = false; });
+
+        // --- LIGHTBOX MODAL ZOOM CONTROLS ---
+        function openPhotoModal() {
+            if (examPhotos.length === 0) return;
+            document.getElementById('modal-photo-img').src = examPhotos[currentPhotoIndex];
+            document.getElementById('modal-photo-counter').innerText = `${currentPhotoIndex + 1} / ${examPhotos.length}`;
+            document.getElementById('modal-photo-lightbox').classList.remove('hidden');
+            resetModalPhotoZoom();
+        }
+
+        function closePhotoModal() {
+            document.getElementById('modal-photo-lightbox').classList.add('hidden');
+        }
+
+        function zoomModalPhoto(delta) {
+            modalZoomScale = Math.max(0.8, Math.min(5.0, modalZoomScale + delta));
+            if(modalZoomScale === 1.0) {
+                modalPanX = 0;
+                modalPanY = 0;
+            }
+            applyModalPhotoTransform();
+        }
+
+        function resetModalPhotoZoom() {
+            modalZoomScale = 1.0;
+            modalPanX = 0;
+            modalPanY = 0;
+            applyModalPhotoTransform();
+        }
+
+        function applyModalPhotoTransform() {
+            let wrapper = document.getElementById('modal-photo-wrapper');
+            wrapper.style.transform = `translate(${modalPanX}px, ${modalPanY}px) scale(${modalZoomScale})`;
+            document.getElementById('modal-zoom-level').innerText = `${Math.round(modalZoomScale * 100)}%`;
+        }
+
+        const modalViewport = document.getElementById('modal-photo-viewport');
+
+        modalViewport.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            let zoomDelta = e.deltaY < 0 ? 0.2 : -0.2;
+            zoomModalPhoto(zoomDelta);
+        });
+
+        modalViewport.addEventListener('mousedown', (e) => {
+            if (modalZoomScale <= 1.0) return;
+            isDraggingModalPhoto = true;
+            modalStartDragX = e.clientX - modalPanX;
+            modalStartDragY = e.clientY - modalPanY;
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isDraggingModalPhoto) return;
+            modalPanX = e.clientX - modalStartDragX;
+            modalPanY = e.clientY - modalStartDragY;
+            applyModalPhotoTransform();
+        });
+
+        window.addEventListener('mouseup', () => { isDraggingModalPhoto = false; });
+
+        // --- 2. QUIZ MODE ---
+        function openQuizMode() {
+            if(globalData.quiz.length === 0) {
+                alert("ไม่พบข้อมูลแนวคำถามใน Google ชีต");
+                return;
+            }
+            let shuffled = [...globalData.quiz].sort(() => 0.5 - Math.random());
+            quizQuestions = shuffled.slice(0, 35).map(row => {
+                let question = row[1];
+                let correctAns = row[2];
+                let distractors = [row[3], row[4], row[5]].filter(x => x && x.toString().trim() !== "");
+                let choices = [correctAns, ...distractors].sort(() => 0.5 - Math.random());
+                return {
+                    question: question,
+                    correct: correctAns,
+                    choices: choices
+                };
+            });
+
+            currentQuizIndex = 0;
+            userAnswers = {};
+            renderQuizCard();
+            showView('view-quiz');
+        }
+
+        function renderQuizCard() {
+            let qData = quizQuestions[currentQuizIndex];
+            document.getElementById('quiz-counter').innerText = `ข้อ ${currentQuizIndex + 1} / ${quizQuestions.length}`;
+            document.getElementById('quiz-q').innerText = qData.question;
+
+            let container = document.getElementById('quiz-choices');
+            container.innerHTML = "";
+            let labels = ['ก', 'ข', 'ค', 'ง', 'จ'];
+
+            qData.choices.forEach((choice, idx) => {
+                let isSelected = userAnswers[currentQuizIndex] === choice;
+                let btn = document.createElement('button');
+                btn.className = `w-full text-left p-4 md:p-5 rounded-2xl border transition flex items-center gap-4 ${isSelected ? 'bg-indigo-950/90 border-indigo-500 text-white shadow-lg shadow-indigo-950/60' : 'bg-dark-800 border-slate-700 text-slate-200 hover:bg-dark-700'}`;
+                btn.innerHTML = `<span class="w-9 h-9 rounded-xl bg-dark-700 border border-slate-600 flex items-center justify-center text-sm md:text-base font-extrabold ${isSelected ? 'bg-indigo-600 text-white border-indigo-500' : 'text-slate-300'}">${labels[idx]}</span> <span class="text-base md:text-lg font-medium">${choice}</span>`;
+                btn.onclick = () => {
+                    userAnswers[currentQuizIndex] = choice;
+                    renderQuizCard();
+                    updateUnansweredCount();
+                };
+                container.appendChild(btn);
+            });
+            updateUnansweredCount();
+        }
+
+        function nextQuiz() {
+            if(currentQuizIndex < quizQuestions.length - 1) {
+                currentQuizIndex++;
+                renderQuizCard();
+            }
+        }
+
+        function prevQuiz() {
+            if(currentQuizIndex > 0) {
+                currentQuizIndex--;
+                renderQuizCard();
+            }
+        }
+
+        function updateUnansweredCount() {
+            let unanswered = 0;
+            for(let i=0; i<quizQuestions.length; i++) {
+                if(userAnswers[i] === undefined) unanswered++;
+            }
+            document.getElementById('unanswered-badge').innerText = unanswered;
+        }
+
+        function toggleUnansweredModal() {
+            let modal = document.getElementById('modal-unanswered');
+            modal.classList.toggle('hidden');
+            if(!modal.classList.contains('hidden')) {
+                let grid = document.getElementById('unanswered-grid');
+                grid.innerHTML = "";
+                for(let i=0; i<quizQuestions.length; i++) {
+                    let isAns = userAnswers[i] !== undefined;
+                    let btn = document.createElement('button');
+                    btn.className = `p-3.5 rounded-2xl border text-sm font-extrabold transition ${isAns ? 'bg-emerald-950/50 border-emerald-900 text-emerald-400' : 'bg-red-950/50 border-red-900 text-red-400 hover:bg-red-900/50'}`;
+                    btn.innerText = i + 1;
+                    btn.onclick = () => {
+                        currentQuizIndex = i;
+                        renderQuizCard();
+                        toggleUnansweredModal();
+                    };
+                    grid.appendChild(btn);
+                }
+            }
+        }
+
+        async function submitQuiz() {
+            let unanswered = 0;
+            for(let i=0; i<quizQuestions.length; i++) {
+                if(userAnswers[i] === undefined) unanswered++;
+            }
+            if(unanswered > 0) {
+                alert(`กรุณาตอบให้ครบทุกข้อ (ยังเหลืออีก ${unanswered} ข้อ)`);
+                return;
+            }
+
+            if(!confirm("ต้องการส่งคำตอบและตรวจผลสอบใช่หรือไม่?")) return;
+
+            showLoader("กำลังตรวจคะแนนและบันทึกผล...");
+
+            let correctCount = 0;
+            let wrongCount = 0;
+            let wrongDetailsHTML = "";
+
+            quizQuestions.forEach((q, idx) => {
+                let userAns = userAnswers[idx];
+                if(userAns === q.correct) {
+                    correctCount++;
+                } else {
+                    wrongCount++;
+                    wrongDetailsHTML += `
+                        <div class="p-4 bg-dark-800 border border-slate-700 rounded-2xl text-sm">
+                            <div class="text-red-400 font-bold mb-1.5">ข้อที่ ${idx + 1}: ${q.question}</div>
+                            <div class="text-slate-300">คำตอบของคุณ: <span class="text-red-400 font-semibold">${userAns}</span></div>
+                            <div class="text-emerald-400">คำตอบที่ถูกต้อง: <span class="text-emerald-300 font-semibold">${q.correct}</span></div>
+                        </div>
+                    `;
+                }
+            });
+
+            document.getElementById('result-score-text').innerText = `${correctCount} / ${quizQuestions.length}`;
+            document.getElementById('res-correct').innerText = correctCount;
+            document.getElementById('res-wrong').innerText = wrongCount;
+            document.getElementById('result-details').innerHTML = wrongDetailsHTML || '<div class="text-center text-emerald-400 py-6 font-bold text-lg">ยอดเยี่ยมมาก! คุณตอบถูกทุกข้อ</div>';
+
+            let now = new Date().toLocaleString();
+            let device = navigator.userAgent;
+            let deviceKey = "quiz_attempt_count";
+            let attemptCount = (parseInt(localStorage.getItem(deviceKey)) || 0) + 1;
+            localStorage.setItem(deviceKey, attemptCount);
+
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'saveResult',
+                        timestamp: now,
+                        device: device,
+                        attempt: attemptCount,
+                        score: `${correctCount}/${quizQuestions.length}`,
+                        correct: correctCount,
+                        wrong: wrongCount
+                    })
+                });
+            } catch(e) {}
+
+            hideLoader();
+            showView('view-result');
+        }
+
+        // --- 3. ADMIN EDIT MODE ---
+        function promptAdminPin() {
+            let pin = prompt("กรุณากรอกรหัสผ่านผู้ดูแลระบบ (Admin)");
+            if(pin === "0000") {
+                renderAdminTable();
+                showView('view-admin');
+            } else if(pin !== null) {
+                alert("รหัสผ่านไม่ถูกต้อง");
+            }
+        }
+
+        function switchAdminTab(tab) {
+            activeAdminTab = tab;
+            document.getElementById('tab-btn-exam').className = tab === 'exam' ? 'px-6 py-3 bg-sky-600 text-white rounded-2xl text-sm font-bold transition shadow-lg' : 'px-6 py-3 bg-dark-700 text-slate-300 rounded-2xl text-sm font-bold transition hover:bg-dark-600';
+            document.getElementById('tab-btn-quiz').className = tab === 'quiz' ? 'px-6 py-3 bg-sky-600 text-white rounded-2xl text-sm font-bold transition shadow-lg' : 'px-6 py-3 bg-dark-700 text-slate-300 rounded-2xl text-sm font-bold transition hover:bg-dark-600';
+            renderAdminTable();
+        }
+
+        function renderAdminTable() {
+            let table = document.getElementById('admin-table');
+            let data = adminTableData[activeAdminTab];
+            table.innerHTML = "";
+
+            if(data.length === 0) return;
+
+            // Header
+            let thead = document.createElement('tr');
+            data[0].forEach((col, cIdx) => {
+                let th = document.createElement('th');
+                th.className = "p-3 border-b border-slate-700 font-bold text-sky-400 truncate max-w-[180px]";
+                th.innerText = col;
+                thead.appendChild(th);
+            });
+            let thAct = document.createElement('th');
+            thAct.className = "p-3 border-b border-slate-700 font-bold text-sky-400 text-center";
+            thAct.innerText = "จัดการ";
+            thead.appendChild(thAct);
+            table.appendChild(thead);
+
+            // Rows
+            for(let r=1; r<data.length; r++) {
+                let tr = document.createElement('tr');
+                data[r].forEach((val, cIdx) => {
+                    let td = document.createElement('td');
+                    td.className = "p-3 border-b border-slate-800 text-slate-200 truncate max-w-[220px]";
+                    td.innerText = val || "-";
+                    tr.appendChild(td);
+                });
+
+                // Action buttons
+                let tdAct = document.createElement('td');
+                tdAct.className = "p-3 border-b border-slate-800 text-center flex items-center justify-center gap-2";
+                
+                let editBtn = document.createElement('button');
+                editBtn.innerHTML = '<i class="fa-solid fa-pen text-sky-400"></i>';
+                editBtn.className = "p-2 bg-dark-700 hover:bg-dark-600 rounded-xl transition";
+                editBtn.title = "แก้ไข";
+                editBtn.onclick = () => openAdminEditModal(r);
+
+                let delBtn = document.createElement('button');
+                delBtn.innerHTML = '<i class="fa-solid fa-trash text-red-400"></i>';
+                delBtn.className = "p-2 bg-dark-700 hover:bg-dark-600 rounded-xl transition";
+                delBtn.title = "ลบ";
+                delBtn.onclick = () => {
+                    if(confirm("ต้องการลบแถวนี้ใช่หรือไม่?")) {
+                        adminTableData[activeAdminTab].splice(r, 1);
+                        renderAdminTable();
+                    }
+                };
+
+                tdAct.appendChild(editBtn);
+                tdAct.appendChild(delBtn);
+                tr.appendChild(tdAct);
+
+                table.appendChild(tr);
+            }
+        }
+
+        function openAdminEditModal(rowIndex) {
+            editingRowIndex = rowIndex;
+            let headers = adminTableData[activeAdminTab][0];
+            let rowData = adminTableData[activeAdminTab][rowIndex];
+            
+            document.getElementById('edit-row-num').innerText = rowIndex;
+            let container = document.getElementById('edit-form-container');
+            container.innerHTML = "";
+
+            headers.forEach((header, idx) => {
+                let div = document.createElement('div');
+                div.className = "space-y-1.5";
+                
+                let label = document.createElement('label');
+                label.className = "text-xs font-bold text-sky-400 block uppercase tracking-wider";
+                label.innerText = `${header} (คอลัมน์ ${idx + 1})`;
+                
+                let textarea = document.createElement('textarea');
+                textarea.className = "w-full bg-dark-900 border border-slate-700 rounded-2xl p-4 text-white text-sm md:text-base focus:border-sky-500 outline-none resize-y min-h-[90px]";
+                textarea.value = rowData[idx] || "";
+                textarea.id = `edit-field-${idx}`;
+
+                div.appendChild(label);
+                div.appendChild(textarea);
+                container.appendChild(div);
+            });
+
+            document.getElementById('modal-admin-edit').classList.remove('hidden');
+        }
+
+        function closeAdminEditModal() {
+            document.getElementById('modal-admin-edit').classList.add('hidden');
+            editingRowIndex = -1;
+        }
+
+        function saveAdminRowEdit() {
+            if (editingRowIndex === -1) return;
+            let headers = adminTableData[activeAdminTab][0];
+            let updatedRow = [];
+            headers.forEach((_, idx) => {
+                let val = document.getElementById(`edit-field-${idx}`).value;
+                updatedRow.push(val);
+            });
+            adminTableData[activeAdminTab][editingRowIndex] = updatedRow;
+            closeAdminEditModal();
+            renderAdminTable();
+        }
+
+        function addRowAdmin() {
+            let data = adminTableData[activeAdminTab];
+            if(data.length === 0) return;
+            let emptyRow = new Array(data[0].length).fill("");
+            emptyRow[0] = data.length;
+            data.push(emptyRow);
+            renderAdminTable();
+        }
+
+        async function saveAdminData() {
+            if(!confirm("ยืนยันการบันทึกข้อมูลทับลงใน Google ชีต?")) return;
+            showLoader("กำลังบันทึกข้อมูล...");
+            try {
+                let sheetName = activeAdminTab === 'exam' ? 'แนวข้อสอบ' : 'แนวคำถาม';
+                let rows = adminTableData[activeAdminTab];
+
+                let res = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'updateData',
+                        sheetName: sheetName,
+                        rows: rows
+                    })
+                });
+                let result = await res.json();
+                if(result.status === 'success') {
+                    alert("บันทึกข้อมูลสำเร็จเรียบร้อย!");
+                    await fetchDataFromSheets();
+                } else {
+                    alert("เกิดข้อผิดพลาด: " + result.message);
+                }
+            } catch(e) {
+                alert("ไม่สามารถบันทึกข้อมูลได้");
+            } finally {
+                hideLoader();
+            }
+        }
+    </script>
+</body>
+</html>
