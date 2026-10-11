@@ -267,7 +267,7 @@
         <!-- Quiz Navigation & Submit -->
         <div class="flex items-center justify-between gap-4 pt-2">
             <button onclick="prevQuiz()" class="px-6 py-4 bg-dark-700 hover:bg-dark-600 border border-slate-600 text-white rounded-2xl font-bold text-lg transition shadow-lg flex items-center justify-center gap-2"><i class="fa-solid fa-chevron-left"></i> ก่อนหน้า</button>
-            <button onclick="submitQuiz()" class="flex-1 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:opacity-90 text-white rounded-2xl font-extrabold text-lg transition shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2"><i class="fa-solid fa-paper-plane"></i> ส่งคำตอบตรวจผล</button>
+            <button onclick="submitQuiz()" class="flex-1 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:opacity-90 text-white rounded-2xl font-extrabold text-lg transition shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2"><i class="fa-solid fa-paper-plane"></i> ส่งคำตอบ</button>
             <button onclick="nextQuiz()" class="px-6 py-4 bg-dark-700 hover:bg-dark-600 border border-slate-600 text-white rounded-2xl font-bold text-lg transition shadow-lg flex items-center justify-center gap-2">ถัดไป <i class="fa-solid fa-chevron-right"></i></button>
         </div>
     </div>
@@ -409,8 +409,7 @@
                 calcExpression = String(result);
                 updateCalcDisplay();
 
-                // ปรับเงื่อนไขรหัสผ่านตรงนี้: กำหนดผลลัพธ์ที่ถูกต้อง (เช่น ต้องคำนวณได้ 99 หรือสูตรอื่นตามต้องการ)
-                // ตัวอย่างนี้ตั้งไว้ที่ 99 (เช่น กด 9*11 แล้วกด =)
+                // ตั้งค่ารหัสผ่านผลลัพธ์การคำนวณ (สามารถเปลี่ยนเลข 99 ตามต้องการ)
                 if (result === 99) {
                     // UNLOCK APP
                     setTimeout(() => {
@@ -708,6 +707,7 @@
             modalStartDragY = e.clientY - modalPanY;
         });
 
+        // เพิ่มเติมการรองรับลากเมาส์ข้ามหน้าต่างใน Modal
         window.addEventListener('mousemove', (e) => {
             if (!isDraggingModalPhoto) return;
             modalPanX = e.clientX - modalStartDragX;
@@ -716,6 +716,25 @@
         });
 
         window.addEventListener('mouseup', () => { isDraggingModalPhoto = false; });
+
+        // เพิ่มระบบรองรับ Touch (ลากนิ้ว) ในหน้าต่าง Modal เต็มจอ
+        modalViewport.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1 && modalZoomScale > 1.0) {
+                isDraggingModalPhoto = true;
+                modalStartDragX = e.touches[0].clientX - modalPanX;
+                modalStartDragY = e.touches[0].clientY - modalPanY;
+            }
+        });
+
+        modalViewport.addEventListener('touchmove', (e) => {
+            if (isDraggingModalPhoto && e.touches.length === 1) {
+                modalPanX = e.touches[0].clientX - modalStartDragX;
+                modalPanY = e.touches[0].clientY - modalStartDragY;
+                applyModalPhotoTransform();
+            }
+        });
+
+        modalViewport.addEventListener('touchend', () => { isDraggingModalPhoto = false; });
 
         // --- 2. QUIZ MODE ---
         function openQuizMode() {
@@ -992,7 +1011,7 @@
             let updatedRow = [];
             headers.forEach((_, idx) => {
                 let val = document.getElementById(`edit-field-${idx}`).value;
-                updatedRow.path ? updatedRow.push(val) : updatedRow.push(val); // Safe push
+                updatedRow.push(val);
             });
             adminTableData[activeAdminTab][editingRowIndex] = updatedRow;
             closeAdminEditModal();
